@@ -42,6 +42,8 @@ public:
 	void SetIsGateway(bool isGateway);
 	uint32_t GetRelayId(uint64_t op);
 
+    bool IsNodeMalicious();
+
 private:
 	void PrintInLog(string message);
 

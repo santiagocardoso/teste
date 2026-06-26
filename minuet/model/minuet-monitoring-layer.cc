@@ -276,6 +276,11 @@ namespace ns3 {
 
 		if(m_clusteringManager->IsStarted()) {
 			if(monitoringEventHeader.GetRelayId() == m_node->GetId()) {
+                if (m_clusteringManager->IsNodeMalicious()) {
+                    NS_LOG_INFO(">> ATAQUE <<: Nó malicioso #" << m_node->GetId() << " descartou o alerta crítico!");
+                    return; // Encerra a função. O pacote é deletado.
+                }
+
 				PrintInLog("Monitoring Message Received in Group #" + to_string(m_node->GetId()));
 				if((monitoringEventHeader.GetStatusNode() != MonitoringEventHeader::StatusNode::GATEWAY_BS) && (monitoringEventHeader.GetStatusNode() != MonitoringEventHeader::StatusNode::GATEWAY_BS_MONITOR) && (monitoringEventHeader.GetStatusNode() != MonitoringEventHeader::StatusNode::GATEWAY_C_GATEWAY_BS_MONITOR)) {
 					if(CheckMonitoringZone(monitoringEventHeader.GetMonitoringTime())) {

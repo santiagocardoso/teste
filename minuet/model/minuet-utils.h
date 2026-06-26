@@ -44,11 +44,11 @@ public:
 
 
 	/**************************** Configuration Parameters ***********************************/
-	static constexpr double_t FLOOR_SIZE_X = 8155.47; //      Define floor size in X axis
-	static constexpr double_t FLOOR_SIZE_Y = 8054.39; //      Define floor size in Y axis
-	static constexpr double_t FLOOR_SIZE_X_MIN = 4158.01;     //      Define floor size minimal in X axis (min-X)
-	static constexpr double_t FLOOR_SIZE_Y_MIN = 6178.78;     //      Define floor size minimal in Y axis (min-Y)
-	static constexpr uint32_t TOTAL_NODES = 2614; // Total nodes in scenario
+	static constexpr double_t FLOOR_SIZE_X = 4658.33; //      Define floor size in X axis
+	static constexpr double_t FLOOR_SIZE_Y = 9593.32; //      Define floor size in Y axis
+	static constexpr double_t FLOOR_SIZE_X_MIN = 1788.78;     //      Define floor size minimal in X axis (min-X)
+	static constexpr double_t FLOOR_SIZE_Y_MIN = 6984.78;     //      Define floor size minimal in Y axis (min-Y)
+	static constexpr uint32_t TOTAL_NODES = 1332; // Total nodes in scenario
 	static constexpr uint64_t TOTAL_TIME_SIMULATION = 31321; //87903.0;	// Total steptime simulation
 	static constexpr double_t START_TIME_APP = 30600.00;	// Start time of the application
 	static constexpr double_t FINAL_TIME_APP = 31321.0;	// Final time of the application

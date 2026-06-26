@@ -402,6 +402,13 @@ NS_LOG_COMPONENT_DEFINE ("ClusteringManager");
 			}
 		}
 
+    bool ClusteringManager::IsNodeMalicious() {
+        if (MinuetConfig::SELECTED_CLUSTERING_ALGORITHM == MinuetConfig::CLUSTERING_ALGORITHM::social && m_social) {
+            return m_social->IsMalicious();
+        }
+        return false;
+    }
+
 	void ClusteringManager::PrintInLog(string message) {
 		ofstream os;
 		os.open (MinuetConfig::LOG_FILE_CLUSTERING_MANAGER.c_str(), ofstream::out | ofstream::app);

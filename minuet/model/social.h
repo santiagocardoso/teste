@@ -124,6 +124,11 @@ public:
 	virtual uint16_t GetRelayId(uint16_t op);
 	virtual bool IsStarted();
 
+    static std::map<std::string, std::map<int, int>> m_retransmissaoData;
+    static bool m_retransmissaoLoaded;
+    bool IsMalicious();
+    bool DecisionTreeFilter(double taxa, double v, double d, double n);
+
 private:
     virtual void ReceiveControlMessage(Ptr<Packet> packet, Address addr);
 

@@ -144,6 +144,54 @@ void GerarValoresAleatorios() {
     std::cout << "Arquivo random.txt gerado com sucesso!\n";
 }
 
+void GerarArquivoRetransmissao(int percentualMaliciosos) {
+    const char* folderPath = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/";
+    const std::string filePath = std::string(folderPath) + "retransmissao.txt";
+
+    // MUDANÇA AQUI: Checa se o arquivo já existe para não sobrescrever
+    std::ifstream checkFile(filePath);
+    if (checkFile.good()) {
+        std::cout << "Arquivo retransmissao.txt já existe. Nenhuma alteração feita.\n";
+        return;
+    }
+
+    std::ofstream outFile(filePath, std::ios::trunc); 
+    if (!outFile.is_open()) {
+        std::cerr << "Erro ao abrir: " << filePath << std::endl;
+        return;
+    }
+
+    int totalVeiculos = MinuetConfig::TOTAL_NODES;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist100(0, 100);
+    std::uniform_int_distribution<> distMal(0, 15);
+    std::uniform_int_distribution<> distLeg(85, 100);
+
+    std::vector<int> mal_flags, tx_rates;
+
+    for (int i = 0; i < totalVeiculos; ++i) {
+        if (dist100(gen) < percentualMaliciosos) {
+            mal_flags.push_back(1);
+            tx_rates.push_back(distMal(gen));
+        } else {
+            mal_flags.push_back(0);
+            tx_rates.push_back(distLeg(gen));
+        }
+    }
+
+    outFile << "mal";
+    for (int val : mal_flags) { outFile << " " << val; }
+    outFile << "\n";
+
+    outFile << "tx";
+    for (int val : tx_rates) { outFile << " " << val; }
+    outFile << "\n";
+
+    outFile.close();
+    std::cout << "Arquivo retransmissao.txt gerado com " << percentualMaliciosos << "% de maliciosos!\n";
+}
+
 int
 main (int argc, char *argv[]) {
 	Time::SetResolution (Time::NS);
@@ -214,6 +262,8 @@ main (int argc, char *argv[]) {
 
 	// Criar arquivo "random.txt"
 	GerarValoresAleatorios();
+    int percentualMaliciosos = 20; 
+    GerarArquivoRetransmissao(percentualMaliciosos);
 
 	/******************* Configure Base Stations *********************/
 

@@ -242,11 +242,11 @@ void MinuetConfig::MakeLogDirectory(){
 
 
 /******************************  Central Region Scenario ***********************************/
-const string MinuetConfig::TRACE_EVENTS_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/events/TraceEvents-TCC-centro-alta.ev";
-const string MinuetConfig::TRACE_BASE_STATIONS_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/base_station/TraceBaseStations-TCC-centro.bs";
-const string MinuetConfig::TRACE_MOBILITY_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/tcl/TCC/centro/alta/mobiTracerFinal.tcl";
-const string MinuetConfig::TRACE_ACTTIVITY_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/tcl/TCC/centro/alta/activityTracerFinal.tcl";
-const string MinuetConfig::TRACE_CONFIG_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/tcl/TCC/centro/alta/configTracerFinal.tcl";
+const string MinuetConfig::TRACE_EVENTS_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/events/TraceEvents-TCC-rodovia-alta.ev";
+const string MinuetConfig::TRACE_BASE_STATIONS_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/base_station/TraceBaseStations-TCC-rodovia.bs";
+const string MinuetConfig::TRACE_MOBILITY_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/tcl/TCC/rodovia/alta/mobiTracerFinal.tcl";
+const string MinuetConfig::TRACE_ACTTIVITY_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/tcl/TCC/rodovia/alta/activityTracerFinal.tcl";
+const string MinuetConfig::TRACE_CONFIG_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/tcl/TCC/rodovia/alta/configTracerFinal.tcl";
 
 const string MinuetConfig::TRACE_NETANIM_FILE = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/netanim/LustNetAnim.xml";
 const string MinuetConfig::LOG_FILE_APP_MINUET = "/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/log/" + MinuetConfig::GetCurrentDateTime() + "/logFileAppMINUET.log";

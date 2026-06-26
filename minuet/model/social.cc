@@ -18,6 +18,9 @@
 std::map<std::string, std::map<int, int>> SOCIAL::m_randomData;
 bool SOCIAL::m_dataLoaded = false;
 
+std::map<std::string, std::map<int, int>> SOCIAL::m_retransmissaoData;
+bool SOCIAL::m_retransmissaoLoaded = false;
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("SOCIAL");
@@ -211,6 +214,27 @@ SOCIAL::SOCIAL () {
         m_dataLoaded = true;
         std::cout << "Arquivo random.txt OK" << std::endl;
     }
+
+    if (!m_retransmissaoLoaded) {
+        std::ifstream fileRetrans("/root/ns3/ns-allinone-3.29/ns-3.29/src/minuet/utils/trace/retransmissao.txt");
+        std::string lineRetrans;
+        while (getline(fileRetrans, lineRetrans)) {
+            std::istringstream iss(lineRetrans);
+            std::string key; int value;
+            iss >> key;
+            int vehicle_index = 0;
+            while (iss >> value) {
+                m_retransmissaoData[key][vehicle_index] = value;
+                vehicle_index++;
+            }
+        }
+        fileRetrans.close();
+        m_retransmissaoLoaded = true;
+    }
+}
+
+bool SOCIAL::IsMalicious() {
+    return m_retransmissaoData["mal"][m_node->GetId()] == 1;
 }
 
 SOCIAL::~SOCIAL() {
@@ -730,6 +754,16 @@ Ptr<Node> FindNodeById(uint16_t nodeId) {
         return nullptr;
 }
 
+bool SOCIAL::DecisionTreeFilter(double taxa, double v, double d, double n) {
+    // Para o escopo deste trabalho, o nó de decisão principal da Árvore 
+    // baseia-se no histórico comportamental (Taxa de Encaminhamento).
+    if (taxa <= 0.50) {
+        return false; // Comportamento anômalo detectado (Bloqueia)
+    } else {
+        return true;  // Comportamento confiável (Aprova)
+    }
+}
+
 uint16_t SOCIAL::RelayElection() {
     time_t ini, end;
     time(&ini);
@@ -800,37 +834,38 @@ uint16_t SOCIAL::RelayElection() {
         double cn = (double)neighbor.GetScore();
 
         // C5: Velocity
-        double cv = CalculateAverageSpeedScore(magnitudeVelocity_kmh);
+        //double cv = CalculateAverageSpeedScore(magnitudeVelocity_kmh);
 
         // random.txt
-        int av = m_randomData["av"][neighborId];
-        int ec = m_randomData["ec"][neighborId];
-        int tc = m_randomData["tc"][neighborId];
-        int im = m_randomData["im"][neighborId];
-        int pv = m_randomData["pv"][neighborId];
-        int lp = m_randomData["lp"][neighborId];
-        int tt = m_randomData["tt"][neighborId];
-        int vt = m_randomData["vt"][neighborId];
+        //int av = m_randomData["av"][neighborId];
+        //int ec = m_randomData["ec"][neighborId];
+        //int tc = m_randomData["tc"][neighborId];
+        //int im = m_randomData["im"][neighborId];
+        //int pv = m_randomData["pv"][neighborId];
+        //int lp = m_randomData["lp"][neighborId];
+        //int tt = m_randomData["tt"][neighborId];
+        //int vt = m_randomData["vt"][neighborId];
 
         // C6: Vehicle age
-        double ca = CalculateVehicleAgeScore(av);
+        //double ca = CalculateVehicleAgeScore(av);
 
         // C7: Fuel efficiency
-        double ce = CalculateFuelEfficiencyScore(ec);
+        //double ce = CalculateFuelEfficiencyScore(ec);
         
         // C8: Time licensed x Drivers age x Vehicle potency
-        double timeLicensed = CalculateTimeLicensedScore(tc);
-        double ageVsPotency = CalculateAgeVsPotencyScore(pv, im, lp);
-        double ci = (0.5 * timeLicensed + 0.5 * ageVsPotency);
+        //double timeLicensed = CalculateTimeLicensedScore(tc);
+        //double ageVsPotency = CalculateAgeVsPotencyScore(pv, im, lp);
+        //double ci = (0.5 * timeLicensed + 0.5 * ageVsPotency);
         
         // C9: Time traveled
-        double ct = CalculateTimeTraveledScore(tt);
+        //double ct = CalculateTimeTraveledScore(tt);
         
         // C10: Vehicle type
-        double cm = CalculateVehicleTypeScore(vt);
+        //double cm = CalculateVehicleTypeScore(vt);
 
         ids.push_back(neighborId);
-        evaluationMatrix.push_back({c0, cc, cd, cn, cv, ca, ce, ci, ct, cm});
+        //evaluationMatrix.push_back({c0, cc, cd, cn, cv, ca, ce, ci, ct, cm});
+        evaluationMatrix.push_back({c0, cd, cn, cc});
     }
 
 	if (evaluationMatrix.empty()) return -1;
@@ -838,28 +873,27 @@ uint16_t SOCIAL::RelayElection() {
 
 	// --- PRÉ-PROCESSAMENTO ---
 	vector<vector<double>> processedMatrix = evaluationMatrix;
-	double minDistance = processedMatrix[0][2], maxDistance = processedMatrix[0][2];
-    double minNeighbors = processedMatrix[0][3], maxNeighbors = processedMatrix[0][3];
+	double minDistance = processedMatrix[0][1], maxDistance = processedMatrix[0][1];
+    double minNeighbors = processedMatrix[0][2], maxNeighbors = processedMatrix[0][2];
 	for (const auto& entry : processedMatrix) {
-		minDistance = std::min(minDistance, entry[2]);
-        maxDistance = std::max(maxDistance, entry[2]);
-        minNeighbors = std::min(minNeighbors, entry[3]);
-        maxNeighbors = std::max(maxNeighbors, entry[3]);
+		minDistance = std::min(minDistance, entry[1]);
+        maxDistance = std::max(maxDistance, entry[1]);
+        minNeighbors = std::min(minNeighbors, entry[2]);
+        maxNeighbors = std::max(maxNeighbors, entry[2]);
 	}
 	for (auto& entry : processedMatrix) {
         if (maxDistance > minDistance) {
-            double normalized_dist = (entry[2] - minDistance) / (maxDistance - minDistance);
-            entry[2] = 1.0 - normalized_dist;
+            double normalized_dist = (entry[1] - minDistance) / (maxDistance - minDistance);
+            entry[1] = 1.0 - normalized_dist;
         } 
-        else {entry[2] = 1.0;}
+        else {entry[1] = 1.0;}
 
         if (maxNeighbors > minNeighbors) {
-            entry[3] = (entry[3] - minNeighbors) / (maxNeighbors - minNeighbors);
+            entry[2] = (entry[2] - minNeighbors) / (maxNeighbors - minNeighbors);
         } 
-        else {entry[3] = 1.0;}
+        else {entry[2] = 1.0;}
     }
 
-    /*
     // RANDOM Functions
     int bestIndexRandom = -1;
     vector<double> scoresRandom(ids.size(), 0.0);
@@ -872,83 +906,44 @@ uint16_t SOCIAL::RelayElection() {
         uint64_t tempo = Simulator::Now().GetNanoSeconds();
         LogAllScores("RANDOM", ids, processedMatrix, scoresRandom, tempo);
     }
-    */
-
-	// AHP Functions
+    /*
+    // AHP Functions
 	int bestIndexAhp = -1;
 	vector<vector<double>> matrizDeJulgamentoAHP = getDefaultAHPJudgmentMatrix();
 	vector<vector<double>> normalizedJudgmentAHP = normalizeAHPMatrix(matrizDeJulgamentoAHP);
 	vector<double> weightsAHP = calculateAHPWeights(normalizedJudgmentAHP);
-    //vector<double> scoresAHP = scoreAHPAlternativesSimple(processedMatrix, weightsAHP);
     vector<double> scoresAHP = scoreAHPAlternatives(processedMatrix, weightsAHP);
-	bestIndexAhp = bestAlternative(scoresAHP);
+
+    while (true) {
+        bestIndexAhp = bestAlternative(scoresAHP);
+        if (bestIndexAhp == -1 || scoresAHP[bestIndexAhp] < 0.0) break;
+
+        uint16_t candidateId = ids[bestIndexAhp];
+
+        // 1. Extrai as métricas
+        double d_score = processedMatrix[bestIndexAhp][1]; 
+        double n_score = processedMatrix[bestIndexAhp][2]; 
+        double v_score = processedMatrix[bestIndexAhp][3]; 
+
+        // 2. Lê o comportamento do txt
+        double taxaReal = m_retransmissaoData["tx"][candidateId] / 100.0;
+
+        // 3. Passa no Filtro
+        //bool isSafe = DecisionTreeFilter(taxaReal, v_score, d_score, n_score);
+        bool isSafe = 1;
+
+        // 4. Decisão
+        if (isSafe) {
+            break; // Aprovado!
+        } else {
+            scoresAHP[bestIndexAhp] = -1.0; // Reprovado, tenta o próximo.
+        }
+    }
     bestIndex = bestIndexAhp;
-	if (bestIndexAhp != -1) {
-		uint64_t tempo = Simulator::Now().GetNanoSeconds();
-		LogAllScores("AHP", ids, processedMatrix, scoresAHP, tempo);
-	}
-
-    /*
-    // PROMETHEE
-	int bestIndexPromethee = -1;
-	vector<vector<double>> preferenceMatrix = calculatePreferenceMatrix(processedMatrix, weightsAHP);
-	vector<double> phiPlus = calculatePositiveFlows(preferenceMatrix);
-	vector<double> phiMinus = calculateNegativeFlows(preferenceMatrix);
-	vector<double> netFlows = calculateNetFlows(phiPlus, phiMinus);
-	bestIndexPromethee = bestAlternativePromethee(netFlows);
-    bestIndex = bestIndexPromethee;
-    //if (bestIndexPromethee != -1) {
-	//	uint64_t tempo = Simulator::Now().GetNanoSeconds();
-	//	LogAllScores("PROMETHEE", ids, processedMatrix, netFlows, tempo);
-	//}
-    */
-
-    /*
-	// T0OPSIS Functions
-	int bestIndexTopsis = -1;
-    vector<vector<double>> normalizedMatrixTopsis = normalize(processedMatrix);
-    vector<vector<double>> weightedMatrixTopsis = multiplyWeights(normalizedMatrixTopsis, weightsAHP);
-    vector<double> idealTopsis = idealSolution(weightedMatrixTopsis);
-    vector<double> antiIdealTopsis = negativeIdealSolution(weightedMatrixTopsis);
-    vector<double> euclideanDistanceIdealTopsis = euclideanDistance(weightedMatrixTopsis, idealTopsis);
-    vector<double> euclideanDistanceAntiIdealTopsis = euclideanDistance(weightedMatrixTopsis, antiIdealTopsis);
-    vector<double> coeffsTopsis = closenessCoefficients(euclideanDistanceIdealTopsis, euclideanDistanceAntiIdealTopsis);
-    bestIndexTopsis = bestAlternative(coeffsTopsis);
-    bestIndex = bestIndexTopsis;
-	//if (bestIndexTopsis != -1) {
-	//	uint64_t tempo = Simulator::Now().GetNanoSeconds();
-	//	LogAllScores("TOPSIS", ids, processedMatrix, coeffsTopsis, tempo); 
-	//}
-    */
-
-    /*
-    // Border Count
-	std::map<int, int> bordaScores;
-	for (int id : ids) {bordaScores[id] = 0;}
-	int n = ids.size();
-	UpdateBordaScores(scoresAHP, ids, n, bordaScores);
-    UpdateBordaScores(netFlows, ids, n, bordaScores);
-    UpdateBordaScores(coeffsTopsis, ids, n, bordaScores);
-	int winnerId = -1;
-	int maxBordaScore = -1;
-	std::vector<double> finalBordaScoresForLog;
-	for (int id : ids) {
-		finalBordaScoresForLog.push_back(bordaScores[id]);
-		if (bordaScores[id] > maxBordaScore) {
-			maxBordaScore = bordaScores[id];
-			winnerId = id;
-		}
-	}
-	if (winnerId != -1) {
-		auto it = std::find(ids.begin(), ids.end(), winnerId);
-		if (it != ids.end()) {
-			bestIndex = std::distance(ids.begin(), it);
-		}
-	}
-	if (bestIndex != -1) {
-		uint64_t tempo = Simulator::Now().GetNanoSeconds();
-		LogAllScores("BORDA", ids, processedMatrix, finalBordaScoresForLog, tempo);
-	}
+    if (bestIndexAhp != -1) {
+        uint64_t tempo = Simulator::Now().GetNanoSeconds();
+        LogAllScores("AHP_DT_HIBRIDO", ids, processedMatrix, scoresAHP, tempo);
+    }
     */
 
 	time(&end);
